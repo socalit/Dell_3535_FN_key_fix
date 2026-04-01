@@ -41,7 +41,7 @@ On Linux Mint, the Dell Inspiron 15 3535's FN keys (brightness, volume, mute, et
 
 ```bash
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/Dell_3535_FN_key_fix.git
+git clone https://github.com/socalit/Dell_3535_FN_key_fix.git
 cd Dell_3535_FN_key_fix
 
 # Make the script executable
