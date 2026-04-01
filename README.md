@@ -105,23 +105,58 @@ Before running this script, make sure your BIOS is up to date. An outdated BIOS 
 
 > **Note:** Once upgraded to 1.28.0 you cannot downgrade to 1.23.0 or earlier. This update includes new 2023 Secure Boot Certificates and Dell Security Advisory (DSA) patches.
 
-**How to update on Linux Mint using `fwupd`:**
+The `.exe` file is Windows-only and cannot be run directly on Linux Mint. Use one of the two methods below instead.
+
+---
+
+### Method 1 — fwupd (Easiest, fully Linux)
+
+Dell publishes most BIOS updates to the [Linux Vendor Firmware Service (LVFS)](https://fwupd.org/). This is the recommended path.
 
 ```bash
 # Install fwupd if not present
 sudo apt install fwupd
 
-# Refresh firmware metadata
-sudo fwupdmgr refresh
+# Plug in your charger first — BIOS updates require AC power
 
-# Check if a BIOS update is available
+# Refresh firmware metadata from LVFS
+sudo fwupdmgr refresh --force
+
+# Check if the 1.28.0 BIOS update is available
 sudo fwupdmgr get-updates
 
-# Apply the update (laptop must be plugged in)
+# Apply the update — laptop will reboot automatically to flash
 sudo fwupdmgr update
 ```
 
-If `fwupd` doesn't detect the update, download the `.exe` from the Dell support page above and apply it from Windows or use a USB BIOS flash (see your BIOS → BIOS Flash Update option).
+> If `get-updates` shows nothing, the update may not be on LVFS yet. Use Method 2.
+
+---
+
+### Method 2 — Extract `.exe` and Flash from BIOS (No Windows needed)
+
+Dell's `.exe` is a self-extracting archive. You can unpack it on Linux and flash the payload directly from the BIOS menu.
+
+```bash
+# Install 7-Zip
+sudo apt install p7zip-full
+
+# Download the .exe from Dell support, then extract it
+7z x Inspiron_3535_1.28.0.exe -o./bios_extracted
+
+# Look for the .hdr or .bin file inside
+ls ./bios_extracted/
+```
+
+Copy the `.hdr` (or `.bin`) file to a **FAT32-formatted USB drive**, then:
+
+1. Plug the USB into your laptop
+2. Reboot and press **F2** to enter BIOS
+3. Go to **Maintenance → BIOS Flash Update** (or **Update BIOS**)
+4. Browse to the `.hdr` file on your USB
+5. Confirm and let it flash — the laptop will reboot automatically
+
+> **Do not power off or close the lid during flashing.**
 
 ---
 
