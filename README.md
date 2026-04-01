@@ -1,5 +1,11 @@
 # Dell Inspiron 15 3535 (AMD Ryzen) — FN Key Fix for Linux Mint
-
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-%23FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/socal370xs)
+[![Linux Mint](https://img.shields.io/badge/Linux-Mint%2021%2B-brightgreen?logo=linux-mint&logoColor=white)](https://linuxmint.com/)
+[![Dell](https://img.shields.io/badge/Dell-Inspiron%2015%203535-blue?logo=dell&logoColor=white)](https://www.dell.com/)
+[![Bash](https://img.shields.io/badge/Script-Bash-black?logo=gnu-bash&logoColor=white)](#)
+[![ACPI](https://img.shields.io/badge/Kernel-ACPI%20%7C%20WMI%20Fix-orange?logo=linux&logoColor=white)](#)
+[![Fingerprint](https://img.shields.io/badge/Fingerprint-fprintd%20Support-success?logo=pinboard&logoColor=white)](#)
+[![License](https://img.shields.io/badge/license-MIT-purple)](/LICENSE)
 A bash script that automatically fixes non-working FN keys on the **Dell Inspiron 15 3535** running **Linux Mint**. Also detects and sets up a fingerprint reader if one is present.
 
 ---
