@@ -90,6 +90,41 @@ fprintd-delete $USER            # remove all enrolled fingers
 
 ---
 
+## Recommended: Update Your BIOS First
+
+Before running this script, make sure your BIOS is up to date. An outdated BIOS can cause FN key and ACPI issues that no Linux fix can fully work around.
+
+| Field | Details |
+|-------|---------|
+| Model | Dell Inspiron 15 3535 / Vostro 3435/3535 |
+| Version | **1.28.0** |
+| Released | March 10, 2026 |
+| Category | Critical — Security + ACPI fixes |
+| File | `Inspiron_3535_1.28.0.exe` (52.18 MB) |
+| Source | [Dell Support — Drivers & Downloads](https://www.dell.com/support/product-details/en-us/product/inspiron-15-3535-laptop/drivers) |
+
+> **Note:** Once upgraded to 1.28.0 you cannot downgrade to 1.23.0 or earlier. This update includes new 2023 Secure Boot Certificates and Dell Security Advisory (DSA) patches.
+
+**How to update on Linux Mint using `fwupd`:**
+
+```bash
+# Install fwupd if not present
+sudo apt install fwupd
+
+# Refresh firmware metadata
+sudo fwupdmgr refresh
+
+# Check if a BIOS update is available
+sudo fwupdmgr get-updates
+
+# Apply the update (laptop must be plugged in)
+sudo fwupdmgr update
+```
+
+If `fwupd` doesn't detect the update, download the `.exe` from the Dell support page above and apply it from Windows or use a USB BIOS flash (see your BIOS → BIOS Flash Update option).
+
+---
+
 ## If FN Keys Still Don't Work After Reboot
 
 **A) Check your BIOS setting (most reliable fix for multimedia keys)**
