@@ -184,16 +184,15 @@ sudo umount /boot/efi
 > **DO NOT turn off the computer during the BIOS update.** Doing so causes irreparable damage to the motherboard.
 
 1. **Turn off** the computer completely
-2. Connect the USB flash drive
-3. Turn on the computer and **tap F12 repeatedly** until the One-Time Boot Menu appears
-4. Use the arrow keys to select **BIOS Flash Update** and press Enter
-5. Select **FS1** (the USB flash drive filesystem)
-6. Click **Browse** → navigate to the `EFI` folder (your system's EFI partition) → select `Inspiron_3535_1.28.0.exe`
-7. Click **OK** to confirm the file selection
-8. Click **Begin Flash Update**
-9. When the warning prompt appears, click **Yes** to start the update
-10. Wait for the progress bar to complete — this can take **up to 10 minutes**
-11. The laptop will automatically restart when flashing is complete
+2. Turn on the computer and **tap F12 repeatedly** until the One-Time Boot Menu appears
+3. Use the arrow keys to select **BIOS Flash Update** and press Enter
+4. Select the filesystem that corresponds to your EFI partition (e.g. **FS0** or **FS1**)
+5. Click **Browse** → navigate to the `EFI` folder → select `Inspiron_3535_1.28.0.exe`
+6. Click **OK** to confirm the file selection
+7. Click **Begin Flash Update**
+8. When the warning prompt appears, click **Yes** to start the update
+9. Wait for the progress bar to complete — this can take **up to 10 minutes**
+10. The laptop will automatically restart when flashing is complete
 
 
 **Step 4 — Verify**
