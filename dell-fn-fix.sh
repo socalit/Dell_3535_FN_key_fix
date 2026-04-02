@@ -103,12 +103,17 @@ HWDB_FILE="/etc/udev/hwdb.d/61-dell-fn-keys.hwdb"
 
 info "Installing udev hwdb mapping for Dell keyboard..."
 cat > "$HWDB_FILE" <<'EOF'
-# Dell Inspiron keyboard — ensure FN-layer scancodes are mapped
+# Dell Inspiron keyboard — FN-layer scancode mappings
 # Matches any AT keyboard on a Dell system (works for built-in keyboards).
 evdev:atkbd:dmi:bvn*:bvr*:bd*:svnDell*:pn*Inspiron*:*
  KEYBOARD_KEY_a0=mute
  KEYBOARD_KEY_ae=volumedown
  KEYBOARD_KEY_b0=volumeup
+ KEYBOARD_KEY_a2=playpause
+ KEYBOARD_KEY_e008=switchvideomode
+ KEYBOARD_KEY_e005=brightnessdown
+ KEYBOARD_KEY_e006=brightnessup
+ KEYBOARD_KEY_e071=kbdillumtoggle
 EOF
 
 systemd-hwdb update
