@@ -132,35 +132,11 @@ Before running this script, make sure your BIOS is up to date. An outdated BIOS 
 
 ### How to Update the BIOS from Linux Mint
 
-**Step 1 — Download and extract the `.exe`**
+**Step 1 — Download the `.exe`**
 
 Go to [Dell Support — Drivers & Downloads](https://www.dell.com/support/product-details/en-us/product/inspiron-15-3535-laptop/drivers), filter by **BIOS**, and download `Inspiron_3535_1.28.0.exe` to `~/Downloads`.
 
-```bash
-# Install 7-Zip
-sudo apt install p7zip-full
-
-# Extract
-cd ~/Downloads
-7z x Inspiron_3535_1.28.0.exe -o./bios_extracted
-
-# List contents
-ls ./bios_extracted/
-```
-
-You will see these files:
-
-| File | Purpose |
-|------|---------|
-| `isflash.bin` | BIOS payload — used by the BIOS menu flash tool |
-| `InterToolx64.efi` | EFI application — used for UEFI shell flashing |
-| `H2OFFT-Wx64.exe` | Windows-only flash tool (not usable on Linux) |
-| `H2OFFT.inf / .cat / .sys` | Windows driver files (not needed on Linux) |
-| `FlsHook.exe` | Windows hook utility (not needed on Linux) |
-| `BiosImageProcx64.dll` | Windows DLL (not needed on Linux) |
-| `Ding.wav` | Sound played after successful flash |
-
-**Step 2 — Copy files to a FAT32 USB drive**
+**Step 2 — Copy the `.exe` to a FAT32 USB drive**
 
 ```bash
 # Find your USB drive (e.g. /dev/sdb)
@@ -177,8 +153,7 @@ sudo mkfs.vfat -F 32 /dev/sdX1
 # Mount and copy
 sudo mkdir -p /mnt/usbdrive
 sudo mount /dev/sdX1 /mnt/usbdrive
-sudo cp ~/Downloads/bios_extracted/isflash.bin /mnt/usbdrive/
-sudo cp ~/Downloads/bios_extracted/InterToolx64.efi /mnt/usbdrive/
+sudo cp ~/Downloads/Inspiron_3535_1.28.0.exe /mnt/usbdrive/
 sudo umount /mnt/usbdrive
 ```
 
@@ -202,30 +177,13 @@ sudo umount /mnt/usbdrive
 3. Turn on the computer and **tap F12 repeatedly** until the One-Time Boot Menu appears
 4. Use the arrow keys to select **BIOS Flash Update** and press Enter
 5. Select **FS1** (the USB flash drive filesystem)
-6. Click **Browse** and navigate to `isflash.bin` on the USB drive
+6. Click **Browse** and navigate to `Inspiron_3535_1.28.0.exe` on the USB drive
 7. Click **OK** to confirm the file selection
 8. Click **Begin Flash Update**
 9. When the warning prompt appears, click **Yes** to start the update
 10. Wait for the progress bar to complete — this can take **up to 10 minutes**
 11. The laptop will automatically restart when flashing is complete
 
-#### Option B — UEFI Shell (Advanced)
-
-1. Plug in the USB and charger
-2. Reboot → tap **F12** repeatedly for the boot menu
-3. Select **UEFI: Built-in EFI Shell** (or your USB if it appears as UEFI)
-4. At the EFI shell prompt, navigate to the USB and run:
-
-```
-fs0:
-InterToolx64.efi
-```
-
-> [!NOTE]
-> Your USB may appear as `fs1:` or `fs2:` depending on other connected drives. Run `map -r` to list available filesystems.
-
-> [!CAUTION]
-> Do not power off, close the lid, or unplug the charger during flashing. A failed flash can brick the laptop.
 
 **Step 4 — Verify**
 
