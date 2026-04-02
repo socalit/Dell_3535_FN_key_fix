@@ -177,7 +177,7 @@ sudo umount /mnt/usbdrive
 3. Turn on the computer and **tap F12 repeatedly** until the One-Time Boot Menu appears
 4. Use the arrow keys to select **BIOS Flash Update** and press Enter
 5. Select **FS1** (the USB flash drive filesystem)
-6. Click **Browse** and navigate to `Inspiron_3535_1.28.0.exe` on the USB drive
+6. Click **Browse** — you may see an `EFI` folder (Ubuntu boot files), you can place `Inspiron_3535_1.28.0.exe` either at the root of the USB or inside the `EFI` folder. Navigate to where you copied it and select it
 7. Click **OK** to confirm the file selection
 8. Click **Begin Flash Update**
 9. When the warning prompt appears, click **Yes** to start the update
