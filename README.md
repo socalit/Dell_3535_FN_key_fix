@@ -168,9 +168,9 @@ sudo umount /boot/efi
 > [!NOTE]
 > If `lsblk -f` already shows `/boot/efi` as the mount point, skip the mount/unmount steps and just run the `cp` command.
 
-**Step 3 — Flash the BIOS (choose one method)**
+**Step 3 — Flash the BIOS**
 
-#### Option A — F12 One-Time Boot Menu (Recommended)
+#### F12 One-Time Boot Menu Bios Flash
 
 > Dell official guide: [Flashing the BIOS from the F12 One-Time Boot Menu](https://www.dell.com/support/kbdoc/en-us/000128928/flashing-the-bios-from-the-f12-one-time-boot-menu)
 
