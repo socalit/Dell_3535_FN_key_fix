@@ -48,9 +48,9 @@ On Linux Mint, the Dell Inspiron 15 3535's FN keys (brightness, volume, mute, et
 |------|--------|
 | 1 | Backs up `/etc/default/grub` before making any changes |
 | 2 | Adds `acpi_osi=Linux`, `acpi_backlight=native`, and `pcie_aspm=off` as kernel boot parameters |
-| 3 | Loads `dell-laptop`, `dell-wmi`, and `sparse-keymap` kernel modules and persists them across reboots |
-| 4 | Ensures `acpi-support` is installed |
-| 5 | Installs a `udev` hwdb rule to map FN key scancodes (mute, volume up/down) |
+| 3 | Loads `dell-laptop`, `dell-wmi`, `dell-wmi-aio`, and `sparse-keymap` kernel modules and persists them across reboots |
+| 4 | Installs `acpid`, `acpi`, and `acpi-call-dkms` if not present; enables and starts the `acpid` service |
+| 5 | Installs a `udev` hwdb rule mapping all 8 FN key scancodes (mute, volume, play/pause, backlight, brightness, display toggle) |
 | 6 | Detects a fingerprint reader and sets it up if found (installs `fprintd`, configures PAM, optionally enrolls your finger) |
 | 7 | Runs `update-grub` to apply boot parameter changes |
 
@@ -184,12 +184,12 @@ sudo umount /mnt/usbdrive
 
 **Step 3 — Flash the BIOS (choose one method)**
 
-#### Option A — BIOS Menu (Recommended)
+#### Option A — BIOS Flash Menu (Recommended)
 
 1. Plug the USB into the Dell Inspiron 15 3535
 2. Plug in the charger — AC power is required
-3. Reboot → press **F2** to enter BIOS setup
-4. Go to **Maintenance → BIOS Flash Update**
+3. Reboot → press **F12** to open the boot menu
+4. Select **BIOS Flash Update**
 5. Browse to `isflash.bin` on the USB
 6. Confirm — the laptop will reboot and flash automatically
 
@@ -223,7 +223,7 @@ sudo dmidecode -s bios-version
 ## If FN Keys Still Don't Work After Reboot
 
 **A) Check your BIOS setting (most reliable fix for multimedia keys)**
-1. Reboot and press **F2** to enter BIOS
+1. Reboot and press **F2** to enter BIOS setup
 2. Go to **System Configuration > Function Key Behavior**
 3. Set to **Function** (not Multimedia)
 4. Alternatively, press **Fn + Esc** at the login screen to toggle FN Lock
@@ -234,11 +234,17 @@ sudo evtest
 # Select your keyboard, then press FN+F1, FN+F2, etc. and note the scancodes
 ```
 
-**C) If brightness keys (FN+F11 / FN+F12) specifically don't work**
+**C) If brightness keys (FN+F6 / FN+F7) specifically don't work**
 
 Edit `/etc/default/grub` and replace `acpi_backlight=native` with `acpi_backlight=video`, then:
 ```bash
 sudo update-grub && sudo reboot
+```
+
+**D) Verify acpid is receiving FN key events**
+```bash
+acpi_listen
+# Press an FN key — events should appear in the terminal
 ```
 
 ---
