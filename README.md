@@ -61,7 +61,8 @@ chmod +x dell-fn-fix.sh
 sudo bash dell-fn-fix.sh
 ```
 
-Reboot when prompted for all changes to take effect.
+> [!NOTE]
+> Reboot when prompted for all changes to take effect.
 
 ---
 
@@ -103,9 +104,11 @@ Before running this script, make sure your BIOS is up to date. An outdated BIOS 
 | File | `Inspiron_3535_1.28.0.exe` (52.18 MB) |
 | Source | [Dell Support — Drivers & Downloads](https://www.dell.com/support/product-details/en-us/product/inspiron-15-3535-laptop/drivers) |
 
-> **Note:** Once upgraded to 1.28.0 you cannot downgrade to 1.23.0 or earlier. This update includes new 2023 Secure Boot Certificates and Dell Security Advisory (DSA) patches.
+> [!CAUTION]
+> Once upgraded to 1.28.0 you **cannot downgrade** to 1.23.0 or earlier. This update includes new 2023 Secure Boot Certificates and Dell Security Advisory (DSA) patches.
 
-The `.exe` is Windows-only and the Inspiron 15 3535 is not listed on [LVFS](https://fwupd.org/), so `fwupd` will not work. The only Linux path is extracting the BIOS payload and flashing it from the BIOS menu.
+> [!NOTE]
+> The `.exe` is Windows-only and the Inspiron 15 3535 is not listed on [LVFS](https://fwupd.org/), so `fwupd` will not work. The only Linux path is extracting the BIOS payload and flashing it from the BIOS menu.
 
 ---
 
@@ -129,7 +132,8 @@ cd ~/Downloads
 ls ./bios_extracted/
 ```
 
-You should see `isflash.bin` — that is the BIOS payload used for flashing.
+> [!NOTE]
+> You should see `isflash.bin` — that is the BIOS payload used for flashing.
 
 **Step 3 — Copy to a FAT32 USB drive**
 
@@ -147,7 +151,8 @@ sudo cp ~/Downloads/bios_extracted/isflash.bin /mnt/usbdrive/
 sudo umount /mnt/usbdrive
 ```
 
-> **Warning:** Double-check `lsblk` before formatting. Picking the wrong drive will erase it.
+> [!WARNING]
+> Double-check `lsblk` before running `mkfs`. Formatting the wrong drive will permanently erase all data on it.
 
 **Step 4 — Flash from BIOS**
 
@@ -158,7 +163,8 @@ sudo umount /mnt/usbdrive
 5. Browse to `isflash.bin` on the USB
 6. Confirm — the laptop will reboot and flash automatically
 
-> **Do not power off, close the lid, or unplug the charger during flashing.**
+> [!CAUTION]
+> Do not power off, close the lid, or unplug the charger during flashing. A failed flash can brick the laptop.
 
 **Step 5 — Verify**
 
@@ -211,6 +217,9 @@ sudo rm /etc/modules-load.d/dell-fn.conf
 sudo rm /etc/udev/hwdb.d/61-dell-fn-keys.hwdb
 sudo systemd-hwdb update
 ```
+
+> [!NOTE]
+> A reboot is required after reverting for all changes to be undone.
 
 ---
 
