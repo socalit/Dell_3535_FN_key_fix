@@ -14,6 +14,24 @@ A bash script that automatically fixes non-working FN keys on the **Dell Inspiro
 
 ---
 
+## FN Key Map
+
+| FN Combo | Action |
+|----------|--------|
+| `FN + F1` | Mute / Unmute |
+| `FN + F2` | Volume Down |
+| `FN + F3` | Volume Up |
+| `FN + F4` | Play / Pause |
+| `FN + F5` | Keyboard Backlight |
+| `FN + F6` | Brightness Up |
+| `FN + F7` | Brightness Down |
+| `FN + F8` | External Monitor (display toggle) |
+
+> [!NOTE]
+> If any of these combos produce no response after running the script, see the **If FN Keys Still Don't Work** section below.
+
+---
+
 ## The Problem
 
 On Linux Mint, the Dell Inspiron 15 3535's FN keys (brightness, volume, mute, etc.) often stop working out of the box. This happens because:
