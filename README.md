@@ -46,13 +46,17 @@ On Linux Mint, the Dell Inspiron 15 3535's FN keys (brightness, volume, mute, et
 
 | Step | Action |
 |------|--------|
-| 1 | Backs up `/etc/default/grub` before making any changes |
-| 2 | Adds `acpi_osi=Linux`, `acpi_backlight=native`, and `pcie_aspm=off` as kernel boot parameters |
-| 3 | Loads `dell-laptop`, `dell-wmi`, `dell-wmi-aio`, and `sparse-keymap` kernel modules and persists them across reboots |
-| 4 | Installs `acpid`, `acpi`, and `acpi-call-dkms` if not present; enables and starts the `acpid` service |
-| 5 | Installs a `udev` hwdb rule mapping all 8 FN key scancodes (mute, volume, play/pause, backlight, brightness, display toggle) |
-| 6 | Detects a fingerprint reader and sets it up if found (installs `fprintd`, configures PAM, optionally enrolls your finger) |
-| 7 | Runs `update-grub` to apply boot parameter changes |
+| 1 | Checks current BIOS version — if below 1.28.0, downloads `BIOS_IMG.rcv` to the EFI partition, prints F12 flash instructions, and exits. After flashing and rebooting, a terminal opens automatically asking if FN keys now work — if yes, done; if no, the script continues with all fixes |
+| 2 | Backs up `/etc/default/grub` before making any changes |
+| 3 | Adds `acpi_osi=Linux`, `acpi_backlight=native`, and `pcie_aspm=off` as kernel boot parameters |
+| 4 | Loads `dell-laptop`, `dell-wmi`, `dell-wmi-aio`, and `sparse-keymap` kernel modules and persists them across reboots |
+| 5 | Installs `acpid`, `acpi`, and `acpi-call-dkms` if not present; enables and starts the `acpid` service |
+| 6 | Installs a `udev` hwdb rule mapping all 8 FN key scancodes (mute, volume, play/pause, backlight, brightness, display toggle) |
+| 7 | Detects a fingerprint reader and sets it up if found (installs `fprintd`, configures PAM, optionally enrolls your finger) |
+| 8 | Runs `update-grub` to apply boot parameter changes |
+
+> [!NOTE]
+> If the script stages a BIOS update and exits, flash the BIOS via F12 then reboot. A terminal will open automatically asking if your FN keys are working. If yes — you're done. If no — the script continues and applies all fixes.
 
 ---
 
@@ -119,7 +123,7 @@ Before running this script, make sure your BIOS is up to date. An outdated BIOS 
 | Version | **1.28.0** |
 | Released | March 10, 2026 |
 | Category | Critical — Security + ACPI fixes |
-| File | `Inspiron_3535_1.28.0.exe` (52.18 MB) |
+| File | `BIOS_IMG.rcv` (Linux) / `Inspiron_3535_1.28.0.exe` (Windows only) |
 | Source | [Dell Support — Drivers & Downloads](https://www.dell.com/support/product-details/en-us/product/inspiron-15-3535-laptop/drivers) |
 
 > [!CAUTION]
@@ -132,11 +136,21 @@ Before running this script, make sure your BIOS is up to date. An outdated BIOS 
 
 ### How to Update the BIOS from Linux Mint
 
-**Step 1 — Download the `.exe`**
+> [!NOTE]
+> The script handles Steps 1 and 2 automatically. If your BIOS is below 1.28.0 it will download `BIOS_IMG.rcv` and copy it to your EFI partition, then exit with instructions. Run the script again after flashing.
 
-Go to [Dell Support — Drivers & Downloads](https://www.dell.com/support/product-details/en-us/product/inspiron-15-3535-laptop/drivers), filter by **BIOS**, and download `Inspiron_3535_1.28.0.exe` to `~/Downloads`.
+**Step 1 — Download the `.rcv` file** *(automated by the script)*
 
-**Step 2 — Copy the `.exe` to your system's EFI partition**
+The script downloads `BIOS_IMG.rcv` directly from Dell and copies it to your EFI partition. To do it manually:
+
+```bash
+wget -O ~/Downloads/BIOS_IMG.rcv https://dl.dell.com/FOLDER14150943M/1/BIOS_IMG.rcv
+```
+
+> [!NOTE]
+> The `.rcv` is the Linux-compatible recovery format. The F12 BIOS Flash tool reads it directly. The `.exe` on the same page is Windows only.
+
+**Step 2 — Copy the `.rcv` to your system's EFI partition** *(automated by the script)*
 
 No USB drive needed. The BIOS flash browser can see your system's EFI partition directly. This is also the recommended approach — Dell advises disconnecting all USB devices before flashing.
 
@@ -156,7 +170,7 @@ sudo mount /dev/sda1 /boot/efi
 Then copy the BIOS file:
 
 ```bash
-sudo cp ~/Downloads/Inspiron_3535_1.28.0.exe /boot/efi/
+sudo cp ~/Downloads/BIOS_IMG.rcv /boot/efi/
 ```
 
 Then unmount:
@@ -168,9 +182,9 @@ sudo umount /boot/efi
 > [!NOTE]
 > If `lsblk -f` already shows `/boot/efi` as the mount point, skip the mount/unmount steps and just run the `cp` command.
 
-**Step 3 — Flash the BIOS**
+**Step 3 — Flash the BIOS (choose one method)**
 
-#### F12 One-Time Boot Menu Bios Flash
+#### Option A — F12 One-Time Boot Menu (Recommended)
 
 > Dell official guide: [Flashing the BIOS from the F12 One-Time Boot Menu](https://www.dell.com/support/kbdoc/en-us/000128928/flashing-the-bios-from-the-f12-one-time-boot-menu)
 
@@ -187,7 +201,7 @@ sudo umount /boot/efi
 2. Turn on the computer and **tap F12 repeatedly** until the One-Time Boot Menu appears
 3. Use the arrow keys to select **BIOS Flash Update** and press Enter
 4. Select the filesystem that corresponds to your EFI partition (e.g. **FS0** or **FS1**)
-5. Click **Browse** → navigate to the `EFI` folder → select `Inspiron_3535_1.28.0.exe`
+5. Click **Browse** → navigate to the `EFI` folder → select `BIOS_IMG.rcv`
 6. Click **OK** to confirm the file selection
 7. Click **Begin Flash Update**
 8. When the warning prompt appears, click **Yes** to start the update
@@ -195,7 +209,14 @@ sudo umount /boot/efi
 10. The laptop will automatically restart when flashing is complete
 
 
-**Step 4 — Verify**
+**Step 4 — After flashing**
+
+The laptop will reboot into Linux Mint. A terminal will open automatically with two options:
+
+- **FN keys working?** → answer **N** — script exits, nothing else installed, you're done
+- **FN keys still broken?** → answer **Y** — script applies all FN key fixes automatically
+
+To verify the BIOS version manually:
 
 ```bash
 sudo dmidecode -s bios-version
