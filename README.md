@@ -136,26 +136,37 @@ Before running this script, make sure your BIOS is up to date. An outdated BIOS 
 
 Go to [Dell Support — Drivers & Downloads](https://www.dell.com/support/product-details/en-us/product/inspiron-15-3535-laptop/drivers), filter by **BIOS**, and download `Inspiron_3535_1.28.0.exe` to `~/Downloads`.
 
-**Step 2 — Copy the `.exe` to a FAT32 USB drive**
+**Step 2 — Copy the `.exe` to your system's EFI partition**
+
+No USB drive needed. The BIOS flash browser can see your system's EFI partition directly. This is also the recommended approach — Dell advises disconnecting all USB devices before flashing.
+
+First, check if the EFI partition is mounted:
 
 ```bash
-# Find your USB drive (e.g. /dev/sdb)
-lsblk
+lsblk -f
 ```
 
-> [!WARNING]
-> Double-check `lsblk` before formatting. Picking the wrong drive will permanently erase all data on it.
+Look for `sda1` with `vfat / FAT32`. If the mount point column is empty, mount it manually:
 
 ```bash
-# Format as FAT32 — replace sdX1 with your USB partition
-sudo mkfs.vfat -F 32 /dev/sdX1
-
-# Mount and copy
-sudo mkdir -p /mnt/usbdrive
-sudo mount /dev/sdX1 /mnt/usbdrive
-sudo cp ~/Downloads/Inspiron_3535_1.28.0.exe /mnt/usbdrive/
-sudo umount /mnt/usbdrive
+sudo mkdir -p /boot/efi
+sudo mount /dev/sda1 /boot/efi
 ```
+
+Then copy the BIOS file:
+
+```bash
+sudo cp ~/Downloads/Inspiron_3535_1.28.0.exe /boot/efi/
+```
+
+Then unmount:
+
+```bash
+sudo umount /boot/efi
+```
+
+> [!NOTE]
+> If `lsblk -f` already shows `/boot/efi` as the mount point, skip the mount/unmount steps and just run the `cp` command.
 
 **Step 3 — Flash the BIOS (choose one method)**
 
@@ -164,7 +175,7 @@ sudo umount /mnt/usbdrive
 > Dell official guide: [Flashing the BIOS from the F12 One-Time Boot Menu](https://www.dell.com/support/kbdoc/en-us/000128928/flashing-the-bios-from-the-f12-one-time-boot-menu)
 
 > [!WARNING]
-> Disconnect all external devices (external drives, printers, scanners) before updating. Leave only keyboard and mouse connected.
+> Disconnect all external devices (external drives, USB drives, printers, scanners) before updating. Leave only keyboard and mouse connected. This is why we copy the `.exe` to the EFI partition instead of a USB drive.
 
 > [!WARNING]
 > Battery must be installed and charged to at least **10%**. Connect the power adapter before proceeding.
@@ -177,7 +188,7 @@ sudo umount /mnt/usbdrive
 3. Turn on the computer and **tap F12 repeatedly** until the One-Time Boot Menu appears
 4. Use the arrow keys to select **BIOS Flash Update** and press Enter
 5. Select **FS1** (the USB flash drive filesystem)
-6. Click **Browse** — you may see an `EFI` folder (Ubuntu boot files), you can place `Inspiron_3535_1.28.0.exe` either at the root of the USB or inside the `EFI` folder. Navigate to where you copied it and select it
+6. Click **Browse** → navigate to the `EFI` folder (your system's EFI partition) → select `Inspiron_3535_1.28.0.exe`
 7. Click **OK** to confirm the file selection
 8. Click **Begin Flash Update**
 9. When the warning prompt appears, click **Yes** to start the update
