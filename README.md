@@ -184,21 +184,35 @@ sudo umount /mnt/usbdrive
 
 **Step 3 — Flash the BIOS (choose one method)**
 
-#### Option A — BIOS Flash Menu (Recommended)
+#### Option A — F12 One-Time Boot Menu (Recommended)
 
 > Dell official guide: [Flashing the BIOS from the F12 One-Time Boot Menu](https://www.dell.com/support/kbdoc/en-us/000128928/flashing-the-bios-from-the-f12-one-time-boot-menu)
 
-1. Plug the USB into the Dell Inspiron 15 3535
-2. Plug in the charger — AC power is required
-3. Reboot → press **F12** to open the One-Time Boot Menu
-4. Select **BIOS Flash Update**
-5. Browse to `isflash.bin` on the USB
-6. Confirm — the laptop will reboot and flash automatically
+> [!WARNING]
+> Disconnect all external devices (external drives, printers, scanners) before updating. Leave only keyboard and mouse connected.
+
+> [!WARNING]
+> Battery must be installed and charged to at least **10%**. Connect the power adapter before proceeding.
+
+> [!CAUTION]
+> **DO NOT turn off the computer during the BIOS update.** Doing so causes irreparable damage to the motherboard.
+
+1. **Turn off** the computer completely
+2. Connect the USB flash drive
+3. Turn on the computer and **tap F12 repeatedly** until the One-Time Boot Menu appears
+4. Use the arrow keys to select **BIOS Flash Update** and press Enter
+5. Select **FS1** (the USB flash drive filesystem)
+6. Click **Browse** and navigate to `isflash.bin` on the USB drive
+7. Click **OK** to confirm the file selection
+8. Click **Begin Flash Update**
+9. When the warning prompt appears, click **Yes** to start the update
+10. Wait for the progress bar to complete — this can take **up to 10 minutes**
+11. The laptop will automatically restart when flashing is complete
 
 #### Option B — UEFI Shell (Advanced)
 
 1. Plug in the USB and charger
-2. Reboot → press **F12** for the boot menu
+2. Reboot → tap **F12** repeatedly for the boot menu
 3. Select **UEFI: Built-in EFI Shell** (or your USB if it appears as UEFI)
 4. At the EFI shell prompt, navigate to the USB and run:
 
