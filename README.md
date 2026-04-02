@@ -186,9 +186,11 @@ sudo umount /mnt/usbdrive
 
 #### Option A — BIOS Flash Menu (Recommended)
 
+> Dell official guide: [Flashing the BIOS from the F12 One-Time Boot Menu](https://www.dell.com/support/kbdoc/en-us/000128928/flashing-the-bios-from-the-f12-one-time-boot-menu)
+
 1. Plug the USB into the Dell Inspiron 15 3535
 2. Plug in the charger — AC power is required
-3. Reboot → press **F12** to open the boot menu
+3. Reboot → press **F12** to open the One-Time Boot Menu
 4. Select **BIOS Flash Update**
 5. Browse to `isflash.bin` on the USB
 6. Confirm — the laptop will reboot and flash automatically
