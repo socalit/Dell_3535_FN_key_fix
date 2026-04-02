@@ -49,14 +49,8 @@ add_grub_param() {
 }
 
 info "Patching GRUB kernel parameters..."
-
-
 add_grub_param "acpi_osi=Linux"
-
-
 add_grub_param "acpi_backlight=native"
-
-
 add_grub_param "pcie_aspm=off"
 
 echo ""
@@ -85,18 +79,25 @@ cat > "$MODULES_CONF" <<'EOF'
 # Dell Inspiron FN key support — loaded at boot
 dell-laptop
 dell-wmi
+dell-wmi-aio
 sparse-keymap
 EOF
 log "Persisted modules → $MODULES_CONF"
 
-info "Checking acpi-support package..."
-if dpkg -s acpi-support &>/dev/null 2>&1; then
-    log "acpi-support already installed."
-else
-    warn "acpi-support not found — installing..."
-    apt-get install -y acpi-support
-    log "acpi-support installed."
-fi
+info "Checking ACPI packages..."
+for pkg in acpid acpi acpi-call-dkms; do
+    if dpkg -s "$pkg" &>/dev/null; then
+        log "${pkg} already installed."
+    else
+        warn "${pkg} not found — installing..."
+        apt-get install -y "$pkg"
+        log "${pkg} installed."
+    fi
+done
+
+systemctl enable acpid
+systemctl start acpid
+log "acpid service enabled and started."
 
 HWDB_FILE="/etc/udev/hwdb.d/61-dell-fn-keys.hwdb"
 
@@ -110,7 +111,6 @@ evdev:atkbd:dmi:bvn*:bvr*:bd*:svnDell*:pn*Inspiron*:*
  KEYBOARD_KEY_b0=volumeup
 EOF
 
-
 systemd-hwdb update
 udevadm trigger --subsystem-match=input --action=change
 log "udev hwdb updated and triggered."
@@ -123,11 +123,9 @@ FP_DEVICE=$(lsusb 2>/dev/null | grep -i "$FP_VENDORS" | head -1 || true)
 if [[ -n "$FP_DEVICE" ]]; then
     log "Fingerprint reader detected: $FP_DEVICE"
 
-    
     info "Installing fingerprint packages..."
     apt-get install -y fprintd libpam-fprintd
 
-   
     systemctl enable fprintd
     systemctl start fprintd
     log "fprintd service enabled and started."
@@ -136,7 +134,6 @@ if [[ -n "$FP_DEVICE" ]]; then
     DEBIAN_FRONTEND=noninteractive pam-auth-update --enable fprintd
     log "PAM updated — fingerprint auth enabled for login, sudo, and lock screen."
 
-
     REAL_USER="${SUDO_USER:-}"
     if [[ -n "$REAL_USER" ]]; then
         echo ""
@@ -144,7 +141,6 @@ if [[ -n "$FP_DEVICE" ]]; then
         read -r enroll_answer
         if [[ "${enroll_answer,,}" == "y" ]]; then
             info "Follow the prompts — swipe your finger 3 times."
-
             sudo -u "$REAL_USER" fprintd-enroll "$REAL_USER"
             log "Fingerprint enrolled for ${REAL_USER}."
             info "To enroll more fingers later:  fprintd-enroll -f <finger>"
@@ -161,7 +157,6 @@ else
     info "To check manually after reboot:  lsusb | grep -iE 'finger|validity|synaptics|goodix'"
 fi
 
-
 info "Updating GRUB bootloader..."
 update-grub
 log "GRUB updated."
@@ -175,10 +170,11 @@ echo "  Changes made:"
 echo "    [1] Kernel params added to GRUB:"
 echo "        acpi_osi=Linux, acpi_backlight=native, pcie_aspm=off"
 echo "    [2] Dell modules loaded now and set to load on boot:"
-echo "        dell-laptop, dell-wmi, sparse-keymap"
-echo "    [3] acpi-support package ensured"
-echo "    [4] udev hwdb scancode mappings installed"
-echo "    [5] Fingerprint reader: detected and configured (or skipped if not present)"
+echo "        dell-laptop, dell-wmi, dell-wmi-aio, sparse-keymap"
+echo "    [3] ACPI packages ensured: acpid, acpi, acpi-call-dkms"
+echo "    [4] acpid service enabled and started"
+echo "    [5] udev hwdb scancode mappings installed"
+echo "    [6] Fingerprint reader: detected and configured (or skipped if not present)"
 echo ""
 echo "  If FN keys still don't work after reboot, also try:"
 echo ""
@@ -197,6 +193,10 @@ echo "    C) If brightness keys (FN+F11/F12) still don't work:"
 echo "       → Try replacing 'acpi_backlight=native' with"
 echo "         'acpi_backlight=video' in /etc/default/grub"
 echo "         then run: sudo update-grub && reboot"
+echo ""
+echo "    D) Verify acpid is receiving FN key events:"
+echo "       → Run:  acpi_listen"
+echo "       → Press an FN key — events should appear in the terminal"
 echo ""
 warn "Reboot now?  (y/N)"
 read -r answer
