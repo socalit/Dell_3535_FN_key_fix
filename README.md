@@ -108,17 +108,15 @@ Before running this script, make sure your BIOS is up to date. An outdated BIOS 
 > Once upgraded to 1.28.0 you **cannot downgrade** to 1.23.0 or earlier. This update includes new 2023 Secure Boot Certificates and Dell Security Advisory (DSA) patches.
 
 > [!NOTE]
-> The `.exe` is Windows-only and the Inspiron 15 3535 is not listed on [LVFS](https://fwupd.org/), so `fwupd` will not work. The only Linux path is extracting the BIOS payload and flashing it from the BIOS menu.
+> The `.exe` is Windows-only and the Inspiron 15 3535 is not listed on [LVFS](https://fwupd.org/), so `fwupd` will not work. Use one of the two Linux methods below.
 
 ---
 
 ### How to Update the BIOS from Linux Mint
 
-**Step 1 — Download the BIOS update**
+**Step 1 — Download and extract the `.exe`**
 
-Go to [Dell Support — Drivers & Downloads](https://www.dell.com/support/product-details/en-us/product/inspiron-15-3535-laptop/drivers), filter by **BIOS**, and download `Inspiron_3535_1.28.0.exe` to your `~/Downloads` folder.
-
-**Step 2 — Extract the `.exe`**
+Go to [Dell Support — Drivers & Downloads](https://www.dell.com/support/product-details/en-us/product/inspiron-15-3535-laptop/drivers), filter by **BIOS**, and download `Inspiron_3535_1.28.0.exe` to `~/Downloads`.
 
 ```bash
 # Install 7-Zip
@@ -128,33 +126,47 @@ sudo apt install p7zip-full
 cd ~/Downloads
 7z x Inspiron_3535_1.28.0.exe -o./bios_extracted
 
-# Confirm isflash.bin is present
+# List contents
 ls ./bios_extracted/
 ```
 
-> [!NOTE]
-> You should see `isflash.bin` — that is the BIOS payload used for flashing.
+You will see these files:
 
-**Step 3 — Copy to a FAT32 USB drive**
+| File | Purpose |
+|------|---------|
+| `isflash.bin` | BIOS payload — used by the BIOS menu flash tool |
+| `InterToolx64.efi` | EFI application — used for UEFI shell flashing |
+| `H2OFFT-Wx64.exe` | Windows-only flash tool (not usable on Linux) |
+| `H2OFFT.inf / .cat / .sys` | Windows driver files (not needed on Linux) |
+| `FlsHook.exe` | Windows hook utility (not needed on Linux) |
+| `BiosImageProcx64.dll` | Windows DLL (not needed on Linux) |
+| `Ding.wav` | Sound played after successful flash |
+
+**Step 2 — Copy files to a FAT32 USB drive**
 
 ```bash
-# Find your USB drive letter (e.g. /dev/sdb)
+# Find your USB drive (e.g. /dev/sdb)
 lsblk
-
-# Format as FAT32 — replace sdX1 with your USB partition (NOT your system drive)
-sudo mkfs.vfat -F 32 /dev/sdX1
-
-# Mount, copy, unmount
-sudo mkdir -p /mnt/usbdrive
-sudo mount /dev/sdX1 /mnt/usbdrive
-sudo cp ~/Downloads/bios_extracted/isflash.bin /mnt/usbdrive/
-sudo umount /mnt/usbdrive
 ```
 
 > [!WARNING]
-> Double-check `lsblk` before running `mkfs`. Formatting the wrong drive will permanently erase all data on it.
+> Double-check `lsblk` before formatting. Picking the wrong drive will permanently erase all data on it.
 
-**Step 4 — Flash from BIOS**
+```bash
+# Format as FAT32 — replace sdX1 with your USB partition
+sudo mkfs.vfat -F 32 /dev/sdX1
+
+# Mount and copy
+sudo mkdir -p /mnt/usbdrive
+sudo mount /dev/sdX1 /mnt/usbdrive
+sudo cp ~/Downloads/bios_extracted/isflash.bin /mnt/usbdrive/
+sudo cp ~/Downloads/bios_extracted/InterToolx64.efi /mnt/usbdrive/
+sudo umount /mnt/usbdrive
+```
+
+**Step 3 — Flash the BIOS (choose one method)**
+
+#### Option A — BIOS Menu (Recommended)
 
 1. Plug the USB into the Dell Inspiron 15 3535
 2. Plug in the charger — AC power is required
@@ -163,10 +175,25 @@ sudo umount /mnt/usbdrive
 5. Browse to `isflash.bin` on the USB
 6. Confirm — the laptop will reboot and flash automatically
 
+#### Option B — UEFI Shell (Advanced)
+
+1. Plug in the USB and charger
+2. Reboot → press **F12** for the boot menu
+3. Select **UEFI: Built-in EFI Shell** (or your USB if it appears as UEFI)
+4. At the EFI shell prompt, navigate to the USB and run:
+
+```
+fs0:
+InterToolx64.efi
+```
+
+> [!NOTE]
+> Your USB may appear as `fs1:` or `fs2:` depending on other connected drives. Run `map -r` to list available filesystems.
+
 > [!CAUTION]
 > Do not power off, close the lid, or unplug the charger during flashing. A failed flash can brick the laptop.
 
-**Step 5 — Verify**
+**Step 4 — Verify**
 
 ```bash
 sudo dmidecode -s bios-version
