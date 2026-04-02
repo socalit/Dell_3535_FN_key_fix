@@ -105,58 +105,67 @@ Before running this script, make sure your BIOS is up to date. An outdated BIOS 
 
 > **Note:** Once upgraded to 1.28.0 you cannot downgrade to 1.23.0 or earlier. This update includes new 2023 Secure Boot Certificates and Dell Security Advisory (DSA) patches.
 
-The `.exe` file is Windows-only and cannot be run directly on Linux Mint. Use one of the two methods below instead.
+The `.exe` is Windows-only and the Inspiron 15 3535 is not listed on [LVFS](https://fwupd.org/), so `fwupd` will not work. The only Linux path is extracting the BIOS payload and flashing it from the BIOS menu.
 
 ---
 
-### Method 1 — fwupd (Easiest, fully Linux)
+### How to Update the BIOS from Linux Mint
 
-Dell publishes most BIOS updates to the [Linux Vendor Firmware Service (LVFS)](https://fwupd.org/). This is the recommended path.
+**Step 1 — Download the BIOS update**
 
-```bash
-# Install fwupd if not present
-sudo apt install fwupd
+Go to [Dell Support — Drivers & Downloads](https://www.dell.com/support/product-details/en-us/product/inspiron-15-3535-laptop/drivers), filter by **BIOS**, and download `Inspiron_3535_1.28.0.exe` to your `~/Downloads` folder.
 
-# Plug in your charger first — BIOS updates require AC power
-
-# Refresh firmware metadata from LVFS
-sudo fwupdmgr refresh --force
-
-# Check if the 1.28.0 BIOS update is available
-sudo fwupdmgr get-updates
-
-# Apply the update — laptop will reboot automatically to flash
-sudo fwupdmgr update
-```
-
-> If `get-updates` shows nothing, the update may not be on LVFS yet. Use Method 2.
-
----
-
-### Method 2 — Extract `.exe` and Flash from BIOS (No Windows needed)
-
-Dell's `.exe` is a self-extracting archive. You can unpack it on Linux and flash the payload directly from the BIOS menu.
+**Step 2 — Extract the `.exe`**
 
 ```bash
 # Install 7-Zip
 sudo apt install p7zip-full
 
-# Download the .exe from Dell support, then extract it
+# Extract
+cd ~/Downloads
 7z x Inspiron_3535_1.28.0.exe -o./bios_extracted
 
-# Look for the .hdr or .bin file inside
+# Confirm isflash.bin is present
 ls ./bios_extracted/
 ```
 
-Copy the `.hdr` (or `.bin`) file to a **FAT32-formatted USB drive**, then:
+You should see `isflash.bin` — that is the BIOS payload used for flashing.
 
-1. Plug the USB into your laptop
-2. Reboot and press **F2** to enter BIOS
-3. Go to **Maintenance → BIOS Flash Update** (or **Update BIOS**)
-4. Browse to the `.hdr` file on your USB
-5. Confirm and let it flash — the laptop will reboot automatically
+**Step 3 — Copy to a FAT32 USB drive**
 
-> **Do not power off or close the lid during flashing.**
+```bash
+# Find your USB drive letter (e.g. /dev/sdb)
+lsblk
+
+# Format as FAT32 — replace sdX1 with your USB partition (NOT your system drive)
+sudo mkfs.vfat -F 32 /dev/sdX1
+
+# Mount, copy, unmount
+sudo mkdir -p /mnt/usbdrive
+sudo mount /dev/sdX1 /mnt/usbdrive
+sudo cp ~/Downloads/bios_extracted/isflash.bin /mnt/usbdrive/
+sudo umount /mnt/usbdrive
+```
+
+> **Warning:** Double-check `lsblk` before formatting. Picking the wrong drive will erase it.
+
+**Step 4 — Flash from BIOS**
+
+1. Plug the USB into the Dell Inspiron 15 3535
+2. Plug in the charger — AC power is required
+3. Reboot → press **F2** to enter BIOS setup
+4. Go to **Maintenance → BIOS Flash Update**
+5. Browse to `isflash.bin` on the USB
+6. Confirm — the laptop will reboot and flash automatically
+
+> **Do not power off, close the lid, or unplug the charger during flashing.**
+
+**Step 5 — Verify**
+
+```bash
+sudo dmidecode -s bios-version
+# Expected output: 1.28.0
+```
 
 ---
 
