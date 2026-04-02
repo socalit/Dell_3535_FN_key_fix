@@ -21,10 +21,124 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
+FLAG_FILE="/var/lib/dell-fn-fix-resume"
+AUTOSTART_FILE="/etc/xdg/autostart/dell-fn-fix-resume.desktop"
+
+if [[ -f "$FLAG_FILE" ]]; then
+    echo ""
+    echo "======================================================="
+    echo "   Dell FN Fix — Resuming after BIOS update"
+    echo "======================================================="
+    echo ""
+    log "BIOS update complete."
+    echo ""
+    warn "Are your FN keys working now? Test them before continuing."
+    echo ""
+    echo "  Press any FN key combo (e.g. FN+F1 for mute) to check."
+    echo ""
+    warn "Do you still need the FN key fixes applied? (y/N)"
+    read -r fn_answer
+    rm -f "$FLAG_FILE"
+    rm -f "$AUTOSTART_FILE"
+    if [[ "${fn_answer,,}" != "y" ]]; then
+        log "FN keys working after BIOS update. No further fixes needed."
+        log "Auto-run entry removed. All done."
+        exit 0
+    fi
+    log "Continuing with FN key fixes..."
+fi
+
 echo ""
 echo "======================================================="
 echo "   Dell Inspiron 15 3535 - FN Key Fix (Linux Mint)"
 echo "======================================================="
+echo ""
+
+BIOS_URL="https://dl.dell.com/FOLDER14150943M/1/BIOS_IMG.rcv"
+BIOS_TARGET="1.28.0"
+EFI_MOUNT="/boot/efi"
+EFI_DEV=$(lsblk -no PATH,FSTYPE | awk '$2=="vfat" {print $1}' | head -1)
+
+info "Checking current BIOS version..."
+CURRENT_BIOS=$(dmidecode -s bios-version 2>/dev/null | tr -d '[:space:]' || echo "unknown")
+log "Current BIOS version: ${CURRENT_BIOS}"
+
+if [[ "$CURRENT_BIOS" == "unknown" ]]; then
+    warn "Could not detect BIOS version — skipping BIOS check."
+elif dpkg --compare-versions "$CURRENT_BIOS" lt "$BIOS_TARGET" 2>/dev/null; then
+    warn "BIOS is outdated (${CURRENT_BIOS} < ${BIOS_TARGET}). Staging update..."
+
+    if [[ -z "$EFI_DEV" ]]; then
+        err "No FAT32/EFI partition found. Cannot stage BIOS update."
+    else
+        MOUNTED=$(lsblk -no MOUNTPOINT "$EFI_DEV")
+        if [[ -z "$MOUNTED" ]]; then
+            info "Mounting EFI partition $EFI_DEV → $EFI_MOUNT"
+            mkdir -p "$EFI_MOUNT"
+            mount "$EFI_DEV" "$EFI_MOUNT"
+            UNMOUNT_EFI=true
+        else
+            EFI_MOUNT="$MOUNTED"
+            UNMOUNT_EFI=false
+        fi
+
+        BIOS_FILE="${EFI_MOUNT}/BIOS_IMG.rcv"
+        info "Downloading BIOS_IMG.rcv..."
+        wget -q --show-progress -O "$BIOS_FILE" "$BIOS_URL"
+        log "BIOS file staged → $BIOS_FILE"
+
+        if [[ "${UNMOUNT_EFI}" == true ]]; then
+            umount "$EFI_MOUNT"
+            log "EFI partition unmounted."
+        fi
+
+        echo ""
+        echo "======================================================="
+        warn "BIOS UPDATE REQUIRED BEFORE CONTINUING"
+        echo "======================================================="
+        echo ""
+        echo "  Your BIOS (${CURRENT_BIOS}) must be updated to ${BIOS_TARGET} first."
+        echo "  The update file has been copied to your EFI partition."
+        echo ""
+        echo "  To flash:"
+        echo "    [1] Reboot this laptop"
+        echo "    [2] Tap F12 repeatedly at startup"
+        echo "    [3] Select 'BIOS Flash Update'"
+        echo "    [4] Browse to the EFI folder"
+        echo "    [5] Select BIOS_IMG.rcv"
+        echo "    [6] Click Begin Flash Update → Yes"
+        echo "    [7] Wait up to 10 minutes — do NOT power off"
+        echo "    [8] After reboot, run this script again"
+        echo ""
+        SCRIPT_PATH="$(realpath "$0")"
+        FLAG_FILE="/var/lib/dell-fn-fix-resume"
+        AUTOSTART_FILE="/etc/xdg/autostart/dell-fn-fix-resume.desktop"
+        touch "$FLAG_FILE"
+
+        cat > "$AUTOSTART_FILE" <<EOF
+[Desktop Entry]
+Type=Application
+Name=Dell FN Fix — Resume after BIOS update
+Exec=x-terminal-emulator -e bash -c 'sudo bash $SCRIPT_PATH; exec bash'
+Terminal=false
+X-GNOME-Autostart-enabled=true
+EOF
+        log "Script will auto-launch in a terminal after BIOS flash and reboot."
+        info "You will have 10 seconds to cancel when it starts."
+
+        warn "Reboot now to flash the BIOS? (y/N)"
+        read -r reboot_bios
+        if [[ "${reboot_bios,,}" == "y" ]]; then
+            log "Rebooting..."
+            reboot
+        else
+            warn "Remember to reboot and flash the BIOS. The script will resume automatically on next boot."
+        fi
+        exit 0
+    fi
+else
+    log "BIOS is up to date (${CURRENT_BIOS}). Continuing..."
+fi
 echo ""
 
 GRUB_FILE="/etc/default/grub"
@@ -184,7 +298,7 @@ echo ""
 echo "  If FN keys still don't work after reboot, also try:"
 echo ""
 echo "    A) BIOS fix (most reliable for multimedia FN keys):"
-echo "       → Reboot → press F2 to enter BIOS"
+echo "       → Reboot → press F12 to enter BIOS"
 echo "       → System Configuration > Function Key Behavior"
 echo "       → Set to 'Function' (not 'Multimedia')"
 echo "       → Or toggle with Fn + Esc at login screen"
